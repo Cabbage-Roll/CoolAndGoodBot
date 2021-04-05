@@ -89,7 +89,7 @@ public class Main {
         }
         connection.setRequestProperty("User-Agent", "Java");
         connection.setRequestMethod("GET");
-        connection.setRequestProperty("Authorization", "Bearer ");
+        connection.setRequestProperty("Authorization", "Bearer " + Secret.userToken);
         try {
             connection.connect();
         } catch (IOException e1) {

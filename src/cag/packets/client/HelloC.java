@@ -3,6 +3,8 @@ package cag.packets.client;
 import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
 
+import cag.Secret;
+
 public class HelloC {
     public static byte[] makePacket(int id) {
         try {
@@ -15,7 +17,7 @@ public class HelloC {
             packer.packString("data");
             packer.packMapHeader(4);
             packer.packString("token");
-            packer.packString("HIDDEN");
+            packer.packString(Secret.userToken);
             packer.packString("handling");
             packer.packMapHeader(4);
             packer.packString("arr");
