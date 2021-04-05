@@ -38,7 +38,9 @@ public class BasePacket {
     private Object unpackData(MessageUnpacker unpacker) throws IOException {
         switch (command) {
         case "social.dm":
-            return new SocialDm(unpacker);
+            SocialDmS dm = new SocialDmS(unpacker);
+            dm.processMessage();
+            return dm;
         case "social.online":
             return new SocialOnline(unpacker);
         default:
