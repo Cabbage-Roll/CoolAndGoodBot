@@ -9,17 +9,19 @@ import cag.packets.client.SocialDmC;
 import cag.packets.client.SocialPresenceC;
 
 public class SocialDmS {
-    String stream;
-    String content;
-    String content_safe;
-    String user;
-    String role;
-    boolean supporter;
-    int supporter_tier;
-    boolean verified;
-    boolean system;
-    String ts;
-    String _id;
+    private String stream;
+    private String content;
+    private String content_safe;
+    private String user;
+    private String role;
+    private boolean supporter;
+    private int supporter_tier;
+    private boolean verified;
+    private boolean system;
+    private String ts;
+    private String _id;
+    private static String helpString = "get real - go online\n" + "get fake - go offline\n"
+            + "toString() - call toString method for sent message\n" + "help - this";
 
     public SocialDmS(MessageUnpacker unpacker) throws IOException {
         unpacker.unpackMapHeader();
@@ -61,20 +63,20 @@ public class SocialDmS {
     public void processMessage() throws IOException {
         switch (content) {
         case "get real":
-            Main.instance.sendPacket(new SocialPresenceC("online", "menus").makePacket());
+            Main.instance.sendPacket(new SocialPresenceC("online", "").makePacket());
             break;
         case "get fake":
-            Main.instance.sendPacket(new SocialPresenceC("offline", "menus").makePacket());
+            Main.instance.sendPacket(new SocialPresenceC("offline", null).makePacket());
             break;
         case "help":
-            Main.instance.sendPacket(new SocialDmC(getSender(), "get real\nget fake\ntoString()").makePacket());
+            Main.instance.sendPacket(new SocialDmC(getSender(), helpString).makePacket());
             break;
         case "toString()":
             Main.instance.sendPacket(new SocialDmC(getSender(), toString()).makePacket());
             break;
         }
     }
-    
+
     private String getSender() {
         return stream.split(":")[0];
     }

@@ -14,7 +14,6 @@ import org.msgpack.core.MessagePack.UnpackerConfig;
 import org.msgpack.core.MessageUnpacker;
 
 import cag.packets.client.New;
-import cag.packets.server.BasePacket;
 import cag.packets.server.HelloS;
 
 public class Ribbon {

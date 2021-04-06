@@ -1,8 +1,12 @@
-package cag.packets.server;
+package cag;
 
 import java.io.IOException;
 
 import org.msgpack.core.MessagePack.UnpackerConfig;
+
+import cag.packets.server.SocialDmS;
+import cag.packets.server.SocialOnline;
+
 import org.msgpack.core.MessageUnpacker;
 
 public class BasePacket {
