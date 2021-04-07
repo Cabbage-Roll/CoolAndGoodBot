@@ -54,6 +54,8 @@ public class SocialDm implements Packet {
         ts = unpacker.unpackString();
         unpacker.unpackString();
         _id = unpacker.unpackString();
+        
+        reactToMessage();
     }
 
     public SocialDm(String recipient, String msg) {
@@ -71,7 +73,7 @@ public class SocialDm implements Packet {
         packer.packString(content);
     }
 
-    public void reactToMessage() throws IOException {
+    private void reactToMessage() throws IOException {
         switch (content) {
         case "get real":
             Main.instance.sendPacket(SocialPresence.premakePacket(SocialPresence.Premade.ONLINE));

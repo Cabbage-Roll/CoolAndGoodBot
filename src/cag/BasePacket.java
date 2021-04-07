@@ -43,7 +43,6 @@ public class BasePacket {
         switch (command) {
         case "social.dm":
             SocialDm dm = new SocialDm(unpacker);
-            dm.reactToMessage();
             return dm;
         case "social.online":
             return new SocialOnline(unpacker);

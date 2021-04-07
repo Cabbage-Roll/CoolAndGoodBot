@@ -1,16 +1,15 @@
 package cag;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
-
-import com.google.gson.Gson;
 
 public class Main {
     
@@ -22,54 +21,49 @@ public class Main {
     }
 
     public static void tetrioStats(String nickname) {
-        new Thread() {
-            @Override
-            public void run() {
-                HttpURLConnection connection = null;
-                try {
-                    connection = (HttpURLConnection) new URL("https://ch.tetr.io/api/users/" + nickname.toLowerCase()).openConnection();
-                } catch (MalformedURLException e1) {
-                    e1.printStackTrace();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-                connection.setRequestProperty("User-Agent", "asdf i dont know");
-
-                try {
-                    connection.connect();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-
-                BufferedReader reader = null;
-                try {
-                    reader = new BufferedReader(
-                            new InputStreamReader(connection.getInputStream(), Charset.forName("UTF-8")));
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-                StringBuilder sb = new StringBuilder();
-                int idk;
-                try {
-                    while ((idk = reader.read()) != -1) {
-                        sb.append((char) idk);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                String jsonString = sb.toString();
-                Gson gson = new Gson();
-                Map<?, ?> map = gson.fromJson(jsonString, Map.class);
-                Map<?, ?> data = (Map<?, ?>) map.get("data");
-                Map<?, ?> user = (Map<?, ?>) data.get("user");
-                Map<?, ?> league = (Map<?, ?>) user.get("league");
-                System.out.println("nickname: " + user.get("username"));
-                System.out.println("country: " + user.get("country"));
-                System.out.println("rank: " + league.get("rank") + ", " + league.get("rating") + "TR");
-                System.out.println("glicko: " + league.get("glicko") + "±" + league.get("rd"));
-                System.out.println(league.get("apm") + "APM " + league.get("pps") + "PPS " + league.get("vs") + "VS");
+        new Thread(() -> {
+            HttpURLConnection connection = null;
+            try {
+                connection = (HttpURLConnection) new URL("https://ch.tetr.io/api/users/" + nickname.toLowerCase()).openConnection();
+            } catch (IOException e1) {
+                e1.printStackTrace();
             }
-        }.start();
+            connection.setRequestProperty("User-Agent", "asdf i dont know");
+
+            try {
+                connection.connect();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+            StringBuilder sb = new StringBuilder();
+            int idk;
+            try {
+                while ((idk = reader.read()) != -1) {
+                    sb.append((char) idk);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            String jsonString = sb.toString();
+            Gson gson = new Gson();
+            Map<?, ?> map = gson.fromJson(jsonString, Map.class);
+            Map<?, ?> data = (Map<?, ?>) map.get("data");
+            Map<?, ?> user = (Map<?, ?>) data.get("user");
+            Map<?, ?> league = (Map<?, ?>) user.get("league");
+            System.out.println("nickname: " + user.get("username"));
+            System.out.println("country: " + user.get("country"));
+            System.out.println("rank: " + league.get("rank") + ", " + league.get("rating") + "TR");
+            System.out.println("glicko: " + league.get("glicko") + "±" + league.get("rd"));
+            System.out.println(league.get("apm") + "APM " + league.get("pps") + "PPS " + league.get("vs") + "VS");
+        }).start();
     }
     
     public static String getFromApi(String url) throws Exception {/*
@@ -82,8 +76,6 @@ public class Main {
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) new URL("https://tetr.io/api/" + url).openConnection();
-        } catch (MalformedURLException e1) {
-            e1.printStackTrace();
         } catch (IOException e1) {
             e1.printStackTrace();
         }
@@ -99,15 +91,15 @@ public class Main {
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(
-                    new InputStreamReader(connection.getInputStream(), Charset.forName("UTF-8")));
+                    new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
         } catch (IOException e1) {
             e1.printStackTrace();
         }
         StringBuilder sb = new StringBuilder();
-        int idk;
+        int character;
         try {
-            while ((idk = reader.read()) != -1) {
-                sb.append((char) idk);
+            while ((character = reader.read()) != -1) {
+                sb.append((char) character);
             }
         } catch (IOException e) {
             e.printStackTrace();
