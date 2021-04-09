@@ -10,15 +10,13 @@ import java.util.TimerTask;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import org.msgpack.core.MessagePack.UnpackerConfig;
-import org.msgpack.core.MessageUnpacker;
+import org.msgpack.value.Value;
+import org.msgpack.value.ValueFactory;
 
-import cag.packets.client.New;
-import cag.packets.server.HelloS;
 
 public class Ribbon {
 
-    private static Map<String, String> RIBBON_CLOSE_CODES = new HashMap<String, String>();
+    private static final Map<String, String> RIBBON_CLOSE_CODES = new HashMap<String, String>();
     static {
         RIBBON_CLOSE_CODES.put("1000", "ribbon closed normally");
         RIBBON_CLOSE_CODES.put("1001", "client closed ribbon");
@@ -91,25 +89,9 @@ public class Ribbon {
                     withoutHeader[i] = packet[1 + i];
                 }
 
-                MessageUnpacker unpacker = new UnpackerConfig().newUnpacker(withoutHeader);
-                unpacker.unpackMapHeader();
-                String key = unpacker.unpackString();
-                switch (key) {
-                case "command":
-                    String command = unpacker.unpackString();
-                    switch (command) {
-                    case "hello":
-                        new HelloS(unpacker);
-                        break;
-                    default:
-                        System.out.println("Unknown command " + command);
-                    }
-                    break;
-                default:
-                    System.out.println("Unknown key " + key);
-                }
+                new PacketReceivingProcess(withoutHeader);
             case RIBBON_BATCH_TAG:
-                System.out.println("BATCH TAG BATCH TAG BATCH TAG BATCH TAG BATCH TAG");
+                System.out.println("Batch tags are not processed");
                 break;
             case RIBBON_EXTENSION_TAG:
                 if (packet[1] == RIBBON_PONG_TAG) {
@@ -120,7 +102,7 @@ public class Ribbon {
                         }
                     }, 5000);
                 } else {
-                    System.out.println("Unknown packet " + packet[1]);
+                    System.out.println("Unknown extension " + packet[1]);
                 }
                 break;
             }
@@ -131,10 +113,12 @@ public class Ribbon {
     }
 
     private void open() {
+
         if (ws != null) {
             ws.close();
         }
         ws = new WebSocketClient(endpoint) {
+
             @Override
             public void onClose(int arg0, String arg1, boolean arg2) {
                 if (closeReason.equals("ribbon lost") && pingissues) {
@@ -148,7 +132,7 @@ public class Ribbon {
 
             @Override
             public void onError(Exception arg0) {
-                arg0.printStackTrace();
+                arg0.getMessage();
             }
 
             @Override
@@ -159,7 +143,10 @@ public class Ribbon {
             @Override
             public void onOpen(ServerHandshake arg0) {
                 try {
-                    sendPacket(New.makePacket());
+                    Map<Value, Value> base = new HashMap<>();
+                    base.put(ValueFactory.newString("command"), ValueFactory.newString("new"));
+                    byte[] packet = Packet.mapToPacket(base);
+                    sendPacket(packet);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

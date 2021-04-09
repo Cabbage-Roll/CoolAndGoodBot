@@ -1,4 +1,4 @@
-package cag.packets;
+package cag;
 
 import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
@@ -47,7 +47,6 @@ public abstract class Packet {
         StringBuilder temp = new StringBuilder();
         for (int i = 0; i < keySplitted.length; i++) {
             temp.append(keySplitted[i]);
-            System.out.println("getkey:"+temp);
             value = valueMap.get(ValueFactory.newString(temp.toString()));
             if (value != null) {
                 temp = new StringBuilder();

@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -14,10 +15,12 @@ import java.util.Map;
 public class Main {
     
     public static Ribbon instance;
+    public static Handler exceptionHandler = new Handler();
     
     public static void main(String[] args) throws Exception {
+        Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
+
         instance = new Ribbon(new URI("wss://tetr.io/ribbon"));
-        //System.out.println(getFromApi("users/me"));
     }
 
     public static void tetrioStats(String nickname) {
@@ -66,7 +69,7 @@ public class Main {
         }).start();
     }
     
-    public static String getFromApi(String url) throws Exception {/*
+    public static String getFromApi(String url) {/*
         return await (await fetch(API_BASE + url, {
             method: "GET",
             headers: {
@@ -80,7 +83,11 @@ public class Main {
             e1.printStackTrace();
         }
         connection.setRequestProperty("User-Agent", "Java");
-        connection.setRequestMethod("GET");
+        try {
+            connection.setRequestMethod("GET");
+        } catch (ProtocolException e) {
+            e.printStackTrace();
+        }
         connection.setRequestProperty("Authorization", "Bearer " + Secret.userToken);
         try {
             connection.connect();
