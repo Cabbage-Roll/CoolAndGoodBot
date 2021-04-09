@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.gson.Gson;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
 
@@ -15,22 +16,32 @@ public class PacketReceivingProcess extends Packet {
         react();
     }
 
-    private void react() throws IOException {
-        String command = find("command").asStringValue().asString();
-        switch (command) {
-            case "social.dm":
-                reactToMessage();
-                break;
-            case "hello":
-                authorize();
-                break;
-            case "err":
-                processError();
-                break;
-            default:
-                System.out.println("Unhandled command " + command);
-                break;
-        }
+    private void react() {
+        new Thread(() -> {
+            String command = find("command").asStringValue().asString();
+            switch (command) {
+                case "social.dm":
+                    try {
+                        reactToMessage();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case "hello":
+                    try {
+                        authorize();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case "err":
+                    processError();
+                    break;
+                default:
+                    System.out.println("Unhandled command " + command);
+                    break;
+            }
+        }).start();
     }
 
     private void processError() {
@@ -39,28 +50,27 @@ public class PacketReceivingProcess extends Packet {
 
     private void reactToMessage() throws IOException {
 
-
         String content = find("data.data.content").asStringValue().asString();
 
         byte[] packet;
         String[] words = content.split(" ");
         Map<Value, Value> object = new HashMap<>();
         Map<Value, Value> data = new HashMap<>();
-        if(content.startsWith("get real")) {
+        if (content.startsWith("get real")) {
             data.put(ValueFactory.newString("status"), ValueFactory.newString("online"));
             data.put(ValueFactory.newString("detail"), ValueFactory.newString(""));
             object.put(ValueFactory.newString("command"), ValueFactory.newString("social.presence"));
             object.put(ValueFactory.newString("data"), ValueFactory.newMap(data));
             packet = Packet.mapToPacket(object);
             Main.instance.sendPacket(packet);
-        } else if(content.startsWith("get fake")) {
+        } else if (content.startsWith("get fake")) {
             data.put(ValueFactory.newString("status"), ValueFactory.newString("offline"));
             data.put(ValueFactory.newString("detail"), ValueFactory.newString(""));
             object.put(ValueFactory.newString("command"), ValueFactory.newString("social.presence"));
             object.put(ValueFactory.newString("data"), ValueFactory.newMap(data));
             packet = Packet.mapToPacket(object);
             Main.instance.sendPacket(packet);
-        } else if(content.startsWith("help")) {
+        } else if (content.startsWith("help")) {
             data.put(ValueFactory.newString("recipient"), find("data.data.user"));
             data.put(ValueFactory.newString("msg"), ValueFactory.newString("get real - go online\n" + "get fake - go offline\n"
                     + "toString() - call toString method for sent message\n" + "help - this"));
@@ -68,14 +78,14 @@ public class PacketReceivingProcess extends Packet {
             object.put(ValueFactory.newString("data"), ValueFactory.newMap(data));
             packet = Packet.mapToPacket(object);
             Main.instance.sendPacket(packet);
-        } else if(content.startsWith("to string")) {
+        } else if (content.startsWith("to string")) {
             data.put(ValueFactory.newString("recipient"), find("data.data.user"));
             data.put(ValueFactory.newString("msg"), ValueFactory.newString(getValues().toString()));
             object.put(ValueFactory.newString("command"), ValueFactory.newString("social.dm"));
             object.put(ValueFactory.newString("data"), ValueFactory.newMap(data));
             packet = Packet.mapToPacket(object);
             Main.instance.sendPacket(packet);
-        } else if(content.startsWith("get")) {
+        } else if (content.startsWith("get")) {
             data.put(ValueFactory.newString("recipient"), find("data.data.user"));
             String word = words[1];
             String jsonString = Main.getFromApi(word);
