@@ -1,9 +1,11 @@
 Secret.java
 /bin/
-/.settings
+/.settings/
 .classpath
 .project
-/.idea
+/.idea/
 CoolAndGoodBot.iml
-/classes
-/src/META-INF
+/classes/
+/src/META-INF/
+*.log
+/target/

@@ -15,7 +15,7 @@ import java.util.Map;
 public class Main {
     
     public static Ribbon instance;
-    public static Handler exceptionHandler = new Handler();
+    public static final Handler exceptionHandler = new Handler();
     
     public static void main(String[] args) throws Exception {
         Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);

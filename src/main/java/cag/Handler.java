@@ -1,10 +1,8 @@
 package cag;
 
-import com.google.gson.Gson;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -28,11 +26,9 @@ class Handler implements Thread.UncaughtExceptionHandler {
         data.put(ValueFactory.newString("msg"), ValueFactory.newString(exceptionAsString));
         object.put(ValueFactory.newString("command"), ValueFactory.newString("social.dm"));
         object.put(ValueFactory.newString("data"), ValueFactory.newMap(data));
-        try {
-            packet = Packet.mapToPacket(object);
-            Main.instance.sendPacket(packet);
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
-        }
+
+        packet = Packet.mapToPacket(object);
+        Main.instance.sendPacket(packet);
+
     }
 }

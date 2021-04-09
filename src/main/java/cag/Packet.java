@@ -12,14 +12,18 @@ public abstract class Packet {
 
     private Map<Value, Value> values;
 
-    public static byte[] mapToPacket(Map<Value, Value> values) throws IOException {
+    public static byte[] mapToPacket(Map<Value, Value> values) {
         MessageBufferPacker mp = MessagePack.newDefaultBufferPacker();
-        mp.packMapHeader(values.entrySet().size());
-        for (Map.Entry<Value, Value> entry : values.entrySet()) {
-            mp.packValue(entry.getKey());
-            mp.packValue(entry.getValue());
+        try {
+            mp.packMapHeader(values.entrySet().size());
+            for (Map.Entry<Value, Value> entry : values.entrySet()) {
+                mp.packValue(entry.getKey());
+                mp.packValue(entry.getValue());
+            }
+            mp.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        mp.close();
         return mp.toByteArray();
     }
 
@@ -41,12 +45,15 @@ public abstract class Packet {
     }
 
     public Value find(String key) {
-        Map<Value, Value> valueMap = values;
-        Value value = value = null;
+        return find(key, getValues());
+    }
+
+    public static Value find(String key, Map<Value, Value> valueMap) {
+        Value value = null;
         String[] keySplitted = key.split("\\.");
         StringBuilder temp = new StringBuilder();
-        for (int i = 0; i < keySplitted.length; i++) {
-            temp.append(keySplitted[i]);
+        for (String s : keySplitted) {
+            temp.append(s);
             value = valueMap.get(ValueFactory.newString(temp.toString()));
             if (value != null) {
                 temp = new StringBuilder();

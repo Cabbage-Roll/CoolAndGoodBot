@@ -1,17 +1,18 @@
 package cag;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+import org.msgpack.jackson.dataformat.MessagePackFactory;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class PacketReceivingProcess extends Packet {
 
-    public PacketReceivingProcess(byte[] packet) throws IOException {
+    public PacketReceivingProcess(byte[] packet) {
         setValues(packetToMap(packet));
         react();
     }
@@ -21,18 +22,10 @@ public class PacketReceivingProcess extends Packet {
             String command = find("command").asStringValue().asString();
             switch (command) {
                 case "social.dm":
-                    try {
-                        reactToMessage();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    reactToMessage();
                     break;
                 case "hello":
-                    try {
-                        authorize();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    authorize();
                     break;
                 case "err":
                     processError();
@@ -48,7 +41,7 @@ public class PacketReceivingProcess extends Packet {
 
     }
 
-    private void reactToMessage() throws IOException {
+    private void reactToMessage() {
 
         String content = find("data.data.content").asStringValue().asString();
 
@@ -87,10 +80,41 @@ public class PacketReceivingProcess extends Packet {
             Main.instance.sendPacket(packet);
         } else if (content.startsWith("get")) {
             data.put(ValueFactory.newString("recipient"), find("data.data.user"));
-            String word = words[1];
-            String jsonString = Main.getFromApi(word);
-            Map map = new Gson().fromJson(jsonString, Map.class);
-            data.put(ValueFactory.newString("msg"), ValueFactory.newString((String) map.get("_id")));
+            String link = words[1];
+            String key = null;
+            if (words.length > 2) {
+                key = words[2];
+            }
+            String jsonString = Main.getFromApi(link);
+            String finalString;
+
+            Gson gson = new Gson();
+            Map<?, ?> somap = gson.fromJson(jsonString, Map.class);
+            ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
+            byte[] bytes = null;
+            try {
+                bytes = objectMapper.writeValueAsBytes(somap);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+
+            Map<Value, Value> map;
+            map = Packet.packetToMap(bytes);
+
+            if (key != null) {
+                finalString = Packet.find(key, map).toString();
+            } else {
+                finalString = jsonString;
+            }
+
+            data.put(ValueFactory.newString("msg"), ValueFactory.newString(finalString));
+            object.put(ValueFactory.newString("command"), ValueFactory.newString("social.dm"));
+            object.put(ValueFactory.newString("data"), ValueFactory.newMap(data));
+            packet = Packet.mapToPacket(object);
+            Main.instance.sendPacket(packet);
+        } else if (content.startsWith("blank space")) {
+            data.put(ValueFactory.newString("recipient"), find("data.data.user"));
+            data.put(ValueFactory.newString("msg"), ValueFactory.newString("\n\n\n\n\n\n\n\n\n\n"));
             object.put(ValueFactory.newString("command"), ValueFactory.newString("social.dm"));
             object.put(ValueFactory.newString("data"), ValueFactory.newMap(data));
             packet = Packet.mapToPacket(object);
@@ -98,7 +122,7 @@ public class PacketReceivingProcess extends Packet {
         }
     }
 
-    private void authorize() throws IOException {
+    private void authorize() {
         byte[] packet;
         Map<Value, Value> object = new HashMap<>();
         Map<Value, Value> data = new HashMap<>();
