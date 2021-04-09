@@ -83,7 +83,7 @@ public class Ribbon {
                 }
                 // extract id from here
 
-                new BasePacket(withoutHeader);
+                new PacketReceivingProcess(withoutHeader);
                 break;
             case RIBBON_STANDARD_ID_TAG:
                 withoutHeader = new byte[packet.length - 1];
