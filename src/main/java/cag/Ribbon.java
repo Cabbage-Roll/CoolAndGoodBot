@@ -79,13 +79,13 @@ public class Ribbon {
                     System.arraycopy(packet, 5, withoutHeader, 0, withoutHeader.length);
                     // extract id from here
 
-                    new PacketReceivingProcess(withoutHeader);
+                    new ReceivedPacket(withoutHeader);
                     break;
                 case RIBBON_STANDARD_ID_TAG:
                     withoutHeader = new byte[packet.length - 1];
                     System.arraycopy(packet, 1, withoutHeader, 0, withoutHeader.length);
 
-                    new PacketReceivingProcess(withoutHeader);
+                    new ReceivedPacket(withoutHeader);
                 case RIBBON_BATCH_TAG:
                     System.out.println("Batch tags are not processed");
                     break;
